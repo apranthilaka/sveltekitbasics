@@ -1,52 +1,70 @@
-<script>
+<script lang="ts">
 	let formState = $state({
-		name: '',
-		birthday: '',
+		answers: {},
 		step: 0,
 		error: ''
 	});
+
+	let questions = [
+		{
+			id: 'name',
+			type: 'text',
+			question: 'what is your name?'
+		},
+		{
+			id: 'birthday',
+			type: 'date',
+			question: 'what is your birthday?'
+		},
+		{
+			id: 'color',
+			type: 'color',
+			question: 'what is your color?'
+		}
+	];
+
+	let handleNext = (val: string) => {
+		if (formState.answers[val]) {
+			formState.step += 1;
+			formState.error = '';
+		} else {
+			formState.error = `Fill in the ${val} information`;
+		}
+	};
 </script>
 
-<main>
+<main class="mt-5 border p-5">
 	<div>
-		Step: {formState.step + 1}
+		{#if formState.step >= questions.length}
+			<p>Thank You!</p>
+		{:else}
+			Step: {formState.step + 1}
+		{/if}
 		{#if formState.error}
-			{formState.error}
+			<div class="error">
+				{formState.error}
+			</div>
 		{/if}
 	</div>
-	{#if formState.step === 0}
-		<div>
-			<label for="">Enter Name</label>
-			<input type="text" id="" bind:value={formState.name} /> <br />
-			<button
-				class=" border p-2"
-				onclick={() => {
-					if (formState.name != '') {
-						formState.step += 1;
-						formState.error = '';
-					} else {
-						formState.error = 'Enter your name, you canr keep it blank';
-					}
-				}}>Next</button
-			>
-		</div>
-	{:else if formState.step === 1}
-		<div>
-			<label for="">Enter Birthday</label>
-			<input type="date" id="" bind:value={formState.birthday} /> <br />
-			<button
-				class=" border p-2"
-				onclick={() => {
-					if (formState.birthday != '') {
-						formState.step += 1;
-						formState.error = '';
-					} else {
-						formState.error = 'Enter your birthday, you canr keep it blank';
-					}
-				}}>Next</button
-			>
-		</div>
-	{:else}
-		<div>Form ended</div>
-	{/if}
+	{#each questions as question, index (question.id)}
+		{#if formState.step === index}
+			{@render formStep({ name: question.id, type: question.type, question: question.question })}
+		{/if}
+	{/each}
+	{JSON.stringify(formState)}
 </main>
+
+<!-- main snippet  -->
+{#snippet formStep({ name, type, question }: { name: string; type: string; question: string })}
+	<div>
+		<label for={name}>{question}</label>
+		<input {type} bind:value={formState.answers[name]} />
+		<button class="border p-2" onclick={() => handleNext(name)}>Next</button>
+	</div>
+{/snippet}
+
+<style>
+	.error {
+		color: red;
+	}
+</style>
